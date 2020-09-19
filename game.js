@@ -3,6 +3,23 @@ class GamePlay extends Phaser.Scene {
     super("gamePlay");
   }
 
+  createAnim(animName, objectName, frameR, repeat, hide) {
+    this.anims.create({
+      key: animName,
+      frames: this.anims.generateFrameNumbers(objectName),
+      frameRate: frameR,
+      repeat: repeat,
+      hideOnComplete: hide,
+    });
+  }
+
+  setRandomVelAndBounce(objectName) {
+    var randVel = Phaser.Math.Between(100, 300);
+    var randBounce = Phaser.Math.Between(1, 1.01);
+    objectName.setVelocity(randVel, randVel);
+    objectName.setBounce(randBounce);
+  }
+
   create() {
     //this.add.text(80, 40, "DA' GAME", { font: "30px Arial", fill: "blue" });
     this.background = this.add.tileSprite(
@@ -20,12 +37,7 @@ class GamePlay extends Phaser.Scene {
       "bandit_1",
     );
 
-    this.anims.create({
-      key: "enemy1_anim",
-      frames: this.anims.generateFrameNumbers("bandit_1"),
-      frameRate: 10,
-      repeat: -1,
-    });
+    this.createAnim("enemy1_anim", "bandit_1", 10, -1, false);
 
     this.enemy1.play("enemy1_anim");
 
@@ -51,13 +63,40 @@ class GamePlay extends Phaser.Scene {
       enemy.setScale(0.4);
     });
 
-    this.anims.create({
-      key: "explode",
-      frames: this.anims.generateFrameNumbers("explosion"),
-      frameRate: 20,
-      repeat: 0,
-      hideOnComplete: true,
-    });
+    this.createAnim("explode", "explosion", 20, 0, true);
+    this.createAnim("power_up", "power_up", 20, -1, false);
+
+    this.powerUps = this.physics.add.group();
+    this.player = this.physics.add.image(
+      configuration.width / 2 - 8,
+      configuration.height - 64,
+      "player",
+    );
+
+    this.player.setScale(0.6);
+    this.player.setCollideWorldBounds(true);
+    this.spacebar = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
+    );
+
+    this.cursorKeys = this.input.keyboard.createCursorKeys();
+
+    var maxPowerUps = 5;
+    for (let index = 0; index < maxPowerUps; index++) {
+      var powerUp = this.physics.add.sprite(16, 16, "power_up");
+      this.powerUps.add(powerUp);
+      powerUp.setRandomPosition(
+        0,
+        0,
+        configuration.width,
+        configuration.height,
+      );
+      powerUp.setScale(1.5);
+      //powerUp.setVelocity(100, 100);
+      powerUp.setCollideWorldBounds(true);
+      //powerUp.setBounce(1);
+      this.setRandomVelAndBounce(powerUp);
+    }
 
     this.enemy1.setInteractive();
 
@@ -94,11 +133,34 @@ class GamePlay extends Phaser.Scene {
     this.background.tilePositionY += this.backgroundSpeed;
   }
 
+  movePlayerManager() {
+    if (this.cursorKeys.left.isDown) {
+      this.player.setVelocityX(-gameSettings.playerSpeed);
+    } else if (this.cursorKeys.right.isDown) {
+      this.player.setVelocityX(gameSettings.playerSpeed);
+    } else {
+      this.player.setVelocityX(0);
+    }
+
+    if (this.cursorKeys.up.isDown) {
+      this.player.setVelocityY(-gameSettings.playerSpeed);
+    } else if (this.cursorKeys.down.isDown) {
+      this.player.setVelocityY(gameSettings.playerSpeed);
+    } else {
+      this.player.setVelocityY(0);
+    }
+  }
+
   update() {
     this.enemies.forEach((enemy) => {
       this.moveEnemy(enemy, 2);
     });
 
     this.scrollBackground();
+
+    this.movePlayerManager();
+    if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+      console.log("Fire");
+    }
   }
 }
