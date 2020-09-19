@@ -14,11 +14,21 @@ class GamePlay extends Phaser.Scene {
     );
     this.background.setOrigin(0, 0);
 
-    this.enemy1 = this.add.image(
+    this.enemy1 = this.add.sprite(
       configuration.width / 2 - 150,
       configuration.height / 2,
       "bandit_1",
     );
+
+    this.anims.create({
+      key: "enemy1_anim",
+      frames: this.anims.generateFrameNumbers("bandit_1"),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.enemy1.play("enemy1_anim");
+
     this.enemy2 = this.add.image(
       configuration.width / 2 - 50,
       configuration.height / 2,
@@ -40,6 +50,24 @@ class GamePlay extends Phaser.Scene {
     this.enemies.forEach((enemy) => {
       enemy.setScale(0.4);
     });
+
+    this.anims.create({
+      key: "explode",
+      frames: this.anims.generateFrameNumbers("explosion"),
+      frameRate: 20,
+      repeat: 0,
+      hideOnComplete: true,
+    });
+
+    this.enemy1.setInteractive();
+
+    this.input.on("gameobjectdown", this.destroyEnemy, this);
+  }
+
+  destroyEnemy(pointer, gameObject) {
+    gameObject.setScale(5);
+    gameObject.setTexture("explosion");
+    gameObject.play("explode");
   }
 
   moveEnemy(enemy, speed) {
@@ -51,9 +79,13 @@ class GamePlay extends Phaser.Scene {
     }
   }
 
+  margin = 30;
   resetEnemyPosition(enemy) {
     enemy.y = 0;
-    var randX = Phaser.Math.Between(20, configuration.width - 20);
+    var randX = Phaser.Math.Between(
+      this.margin,
+      configuration.width - this.margin,
+    );
     enemy.x = randX;
   }
 
