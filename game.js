@@ -22,6 +22,7 @@ class GamePlay extends Phaser.Scene {
 
   create() {
     //this.add.text(80, 40, "DA' GAME", { font: "30px Arial", fill: "blue" });
+    // Fondo
     this.background = this.add.tileSprite(
       0,
       0,
@@ -31,6 +32,7 @@ class GamePlay extends Phaser.Scene {
     );
     this.background.setOrigin(0, 0);
 
+    // Enemigos
     this.enemy1 = this.add.sprite(
       configuration.width / 2 - 150,
       configuration.height / 2,
@@ -41,21 +43,36 @@ class GamePlay extends Phaser.Scene {
 
     this.enemy1.play("enemy1_anim");
 
-    this.enemy2 = this.add.image(
+    this.enemy2 = this.add.sprite(
       configuration.width / 2 - 50,
       configuration.height / 2,
       "bandit_2",
     );
-    this.enemy3 = this.add.image(
+
+    this.createAnim("enemy2_anim", "bandit_2", 10, -1, false);
+
+    this.enemy2.play("enemy2_anim");
+
+    this.enemy3 = this.add.sprite(
       configuration.width / 2 + 50,
       configuration.height / 2,
       "bandit_3",
     );
-    this.enemy4 = this.add.image(
+
+    this.createAnim("enemy3_anim", "bandit_3", 10, -1, false);
+
+    this.enemy3.play("enemy3_anim");
+
+
+    this.enemy4 = this.add.sprite(
       configuration.width / 2 + 150,
       configuration.height / 2,
       "bandit_4",
     );
+
+    this.createAnim("enemy4_anim", "bandit_4", 10, -1, false);
+
+    this.enemy4.play("enemy4_anim");
 
     this.enemies = [this.enemy1, this.enemy2, this.enemy3, this.enemy4];
 
@@ -63,24 +80,22 @@ class GamePlay extends Phaser.Scene {
       enemy.setScale(0.4);
     });
 
+    // this.enemy1.setInteractive();
+
+    this.enemies.forEach((enemy) => {
+      enemy.setInteractive();
+    });
+
+    this.input.on("gameobjectdown", this.destroyEnemy, this);
+
+
+
+    // VFX
     this.createAnim("explode", "explosion", 20, 0, true);
     this.createAnim("power_up", "power_up", 20, -1, false);
 
+    // Powerups
     this.powerUps = this.physics.add.group();
-    this.player = this.physics.add.image(
-      configuration.width / 2 - 8,
-      configuration.height - 64,
-      "player",
-    );
-
-    this.player.setScale(0.6);
-    this.player.setCollideWorldBounds(true);
-    this.spacebar = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE,
-    );
-
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
-
     var maxPowerUps = 5;
     for (let index = 0; index < maxPowerUps; index++) {
       var powerUp = this.physics.add.sprite(16, 16, "power_up");
@@ -98,9 +113,23 @@ class GamePlay extends Phaser.Scene {
       this.setRandomVelAndBounce(powerUp);
     }
 
-    this.enemy1.setInteractive();
 
-    this.input.on("gameobjectdown", this.destroyEnemy, this);
+    // Player
+    this.player = this.physics.add.image(
+      configuration.width / 2 - 8,
+      configuration.height - 64,
+      "player",
+    );
+
+    this.player.setScale(0.6);
+    this.player.setCollideWorldBounds(true);
+    this.spacebar = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
+    );
+
+    // Input
+    this.cursorKeys = this.input.keyboard.createCursorKeys();
+
   }
 
   destroyEnemy(pointer, gameObject) {
