@@ -69,10 +69,24 @@ class Menu extends Phaser.Scene {
       },
     );
 
+    // Proyectil
+    this.load.spritesheet(
+      "bullet",
+      "assets/img/bullet_spritesheet.png",
+      {
+        frameWidth: 13,
+        frameHeight: 57,
+      },
+    );
+
+    
+
     // VFX
     this.loadSpritesheet("explosion", "explosion.png", 16, 16);
     this.loadSpritesheet("power_up", "power-up.png", 16, 16);
   }
+
+
 
   create() {
     this.add.text(80, 40, "Main Menu");

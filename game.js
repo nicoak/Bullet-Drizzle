@@ -115,20 +115,7 @@ class GamePlay extends Phaser.Scene {
     }
 
     
-    // Player
-    // this.player = this.add.sprite(
-    //   configuration.width / 2 + 98,
-    //   configuration.height / 2,
-    //   "player",
-    // );
-
-    // this.player = this.add.sprite(
-    //   configuration.width / 2 + 98,
-    //   configuration.height / 2,
-    //   "player",
-    // );
-
-    
+    // Player    
     this.player = this.physics.add.sprite(
       configuration.width / 2 - 8,
       configuration.height - 64,
@@ -141,6 +128,19 @@ class GamePlay extends Phaser.Scene {
 
     this.player.setScale(0.6);
     this.player.setCollideWorldBounds(true);
+
+    // Proyectil
+    // this.bullet = this.physics.add.sprite(
+    //   configuration.width / 2,
+    //   configuration.height - 200,
+    //   "bullet",
+    //   );
+    
+    // this.bullet.setScale(0.6);
+    // this.bullet.play("anim_bullet");
+
+    this.createAnim("anim_bullet", "bullet", 20, -1, false);
+    this.projectiles = this.add.group();
 
 
         
@@ -185,6 +185,10 @@ class GamePlay extends Phaser.Scene {
     this.background.tilePositionY += this.backgroundSpeed;
   }
 
+  shootBullet(){
+    var bullet = new Bullet(this);
+  }
+
   movePlayerManager() {
     if (this.cursorKeys.left.isDown) {
       this.player.setVelocityX(-gameSettings.playerSpeed);
@@ -211,8 +215,16 @@ class GamePlay extends Phaser.Scene {
     this.scrollBackground();
 
     this.movePlayerManager();
+
     if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+      this.shootBullet();
       console.log("Fire");
     }
+    for (let index = 0; index < this.projectiles.getChildren().length; index++) {
+      var bullet = this.projectiles.getChildren()[index];
+      bullet.update();
+      
+    }
+
   }
 }
