@@ -22,6 +22,7 @@ class GamePlay extends Phaser.Scene {
 
   create() {
     //this.add.text(80, 40, "DA' GAME", { font: "30px Arial", fill: "blue" });
+
     // Fondo
     this.background = this.add.tileSprite(
       0,
@@ -113,22 +114,44 @@ class GamePlay extends Phaser.Scene {
       this.setRandomVelAndBounce(powerUp);
     }
 
-
+    
     // Player
-    this.player = this.physics.add.image(
+    // this.player = this.add.sprite(
+    //   configuration.width / 2 + 98,
+    //   configuration.height / 2,
+    //   "player",
+    // );
+
+    // this.player = this.add.sprite(
+    //   configuration.width / 2 + 98,
+    //   configuration.height / 2,
+    //   "player",
+    // );
+
+    
+    this.player = this.physics.add.sprite(
       configuration.width / 2 - 8,
       configuration.height - 64,
       "player",
-    );
+      );
+
+    this.createAnim("anim_player", "player", 10, -1, false);
+
+    this.player.play("anim_player");
 
     this.player.setScale(0.6);
     this.player.setCollideWorldBounds(true);
+
+
+        
+    // Input
+    this.cursorKeys = this.input.keyboard.createCursorKeys();
+    
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
 
-    // Input
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
+    
 
   }
 

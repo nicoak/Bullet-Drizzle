@@ -60,7 +60,14 @@ class Menu extends Phaser.Scene {
 
 
     // Player
-    this.load.image("player", "assets/img/playerShip3_blue.png");
+    this.load.spritesheet(
+      "player",
+      "assets/img/player_spritesheet.png",
+      {
+        frameWidth: 98,
+        frameHeight: 80,
+      },
+    );
 
     // VFX
     this.loadSpritesheet("explosion", "explosion.png", 16, 16);
@@ -69,6 +76,8 @@ class Menu extends Phaser.Scene {
 
   create() {
     this.add.text(80, 40, "Main Menu");
+
+
     this.scene.start("gamePlay");
   }
 }
