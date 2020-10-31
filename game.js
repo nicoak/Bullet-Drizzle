@@ -21,8 +21,6 @@ class GamePlay extends Phaser.Scene {
   }
 
   create() {
-    //this.add.text(80, 40, "DA' GAME", { font: "30px Arial", fill: "blue" });
-
     // Fondo
     this.background = this.add.tileSprite(
       0,
@@ -32,6 +30,21 @@ class GamePlay extends Phaser.Scene {
       "gameBackground",
     );
     this.background.setOrigin(0, 0);
+
+    var graphics = this.add.graphics();
+    graphics.fillStyle(0x000000, 1);
+    graphics.beginPath();
+    graphics.moveTo(0, 0);
+    graphics.lineTo(configuration.width, 0);
+    graphics.lineTo(configuration.width, 20);
+    graphics.lineTo(0, 20);
+    graphics.lineTo(0, 0);
+    graphics.closePath();
+    graphics.fillPath();
+
+    this.score = 0;
+    this.textScore =  this.add.text(5, 0, "Puntaje: " + this.score, { font: "20px Arial", fill: "white" });
+    this.textTitle =  this.add.text(365, 0, "BulletDrizzle", { font: "20px Arial", fill: "white" });
 
     // Enemigos
     this.enemy1 = this.add.sprite(
@@ -75,15 +88,20 @@ class GamePlay extends Phaser.Scene {
 
     this.enemy4.play("enemy4_anim");
 
-    this.enemies = [this.enemy1, this.enemy2, this.enemy3, this.enemy4];
+    this.enemies = this.physics.add.group();
+    // this.enemies = [this.enemy1, this.enemy2, this.enemy3, this.enemy4];
+    this.enemies.add(this.enemy1);
+    this.enemies.add(this.enemy2);
+    this.enemies.add(this.enemy3);
+    this.enemies.add(this.enemy4);
 
-    this.enemies.forEach((enemy) => {
+    console.log(this.enemies.getChildren())
+
+    this.enemies.getChildren().forEach((enemy) => {
       enemy.setScale(0.4);
     });
 
-    // this.enemy1.setInteractive();
-
-    this.enemies.forEach((enemy) => {
+    this.enemies.getChildren().forEach((enemy) => {
       enemy.setInteractive();
     });
 
@@ -130,15 +148,6 @@ class GamePlay extends Phaser.Scene {
     this.player.setCollideWorldBounds(true);
 
     // Proyectil
-    // this.bullet = this.physics.add.sprite(
-    //   configuration.width / 2,
-    //   configuration.height - 200,
-    //   "bullet",
-    //   );
-    
-    // this.bullet.setScale(0.6);
-    // this.bullet.play("anim_bullet");
-
     this.createAnim("anim_bullet", "bullet", 20, -1, false);
     this.projectiles = this.add.group();
 
@@ -151,7 +160,14 @@ class GamePlay extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
 
-    
+    this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp){
+      projectile.destroy();
+    });
+
+    // Colisiones
+    this.physics.add.overlap(this.player, this.powerUps, this.pickPowerUp, null, this);
+    this.physics.add.overlap(this.player, this.enemies, this.hurtPlayer, null, this);
+    this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
 
   }
 
@@ -189,6 +205,25 @@ class GamePlay extends Phaser.Scene {
     var bullet = new Bullet(this);
   }
 
+  pickPowerUp(player, powerUp){
+    powerUp.disableBody(true, true);
+  }
+
+  hurtPlayer(player, enemy){
+    this.resetEnemyPosition(enemy);
+    player.x = configuration.width / 2 - 8;
+    player.y = configuration.height - 64;
+    this.score -= 500;
+    this.textScore.text = "Puntaje: " + this.score;
+  }
+
+  hitEnemy(projectile, enemy){
+    projectile.destroy();
+    this.resetEnemyPosition(enemy);
+    this.score += 100;
+    this.textScore.text = "Puntaje: " + this.score;
+  }
+
   movePlayerManager() {
     if (this.cursorKeys.left.isDown) {
       this.player.setVelocityX(-gameSettings.playerSpeed);
@@ -208,7 +243,7 @@ class GamePlay extends Phaser.Scene {
   }
 
   update() {
-    this.enemies.forEach((enemy) => {
+    this.enemies.getChildren().forEach((enemy) => {
       this.moveEnemy(enemy, 2);
     });
 
