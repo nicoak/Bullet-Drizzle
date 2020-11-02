@@ -15,9 +15,9 @@ class GamePlay extends Phaser.Scene {
 
   setRandomVelAndBounce(objectName) {
     var randVel = Phaser.Math.Between(100, 300);
-    var randBounce = Phaser.Math.Between(1, 1.01);
+    var randBounce = Phaser.Math.Between(1, 1);
     objectName.setVelocity(randVel, randVel);
-    objectName.setBounce(randBounce);
+    objectName.setBounce(1);
   }
 
   create() {
@@ -49,9 +49,10 @@ class GamePlay extends Phaser.Scene {
     // Enemigos
     this.enemy1 = this.add.sprite(
       configuration.width / 2 - 150,
-      configuration.height / 2,
+      configuration.height / 50,
       "bandit_1",
     );
+    this.enemy1.speed = 3;
 
     this.createAnim("enemy1_anim", "bandit_1", 10, -1, false);
 
@@ -59,9 +60,10 @@ class GamePlay extends Phaser.Scene {
 
     this.enemy2 = this.add.sprite(
       configuration.width / 2 - 50,
-      configuration.height / 2,
+      configuration.height / 45,
       "bandit_2",
     );
+    this.enemy2.speed = 4;
 
     this.createAnim("enemy2_anim", "bandit_2", 10, -1, false);
 
@@ -69,9 +71,10 @@ class GamePlay extends Phaser.Scene {
 
     this.enemy3 = this.add.sprite(
       configuration.width / 2 + 50,
-      configuration.height / 2,
+      configuration.height / 45,
       "bandit_3",
     );
+    this.enemy3.speed = 5;
 
     this.createAnim("enemy3_anim", "bandit_3", 10, -1, false);
 
@@ -80,9 +83,10 @@ class GamePlay extends Phaser.Scene {
 
     this.enemy4 = this.add.sprite(
       configuration.width / 2 + 150,
-      configuration.height / 2,
+      configuration.height / 50,
       "bandit_4",
     );
+    this.enemy4.speed = 6;
 
     this.createAnim("enemy4_anim", "bandit_4", 10, -1, false);
 
@@ -101,11 +105,11 @@ class GamePlay extends Phaser.Scene {
       enemy.setScale(0.4);
     });
 
-    this.enemies.getChildren().forEach((enemy) => {
-      enemy.setInteractive();
-    });
+    // this.enemies.getChildren().forEach((enemy) => {
+    //   enemy.setInteractive();
+    // });
 
-    this.input.on("gameobjectdown", this.destroyEnemy, this);
+    // this.input.on("gameobjectdown", this.destroyEnemy, this);
 
 
 
@@ -115,7 +119,7 @@ class GamePlay extends Phaser.Scene {
 
     // Powerups
     this.powerUps = this.physics.add.group();
-    var maxPowerUps = 5;
+    var maxPowerUps = 1;
     for (let index = 0; index < maxPowerUps; index++) {
       var powerUp = this.physics.add.sprite(16, 16, "power_up");
       this.powerUps.add(powerUp);
@@ -126,9 +130,7 @@ class GamePlay extends Phaser.Scene {
         configuration.height,
       );
       powerUp.setScale(1.5);
-      //powerUp.setVelocity(100, 100);
       powerUp.setCollideWorldBounds(true);
-      //powerUp.setBounce(1);
       this.setRandomVelAndBounce(powerUp);
     }
 
@@ -160,9 +162,9 @@ class GamePlay extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
 
-    this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp){
-      projectile.destroy();
-    });
+    // this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp){
+    //   projectile.destroy();
+    // });
 
     // Colisiones
     this.physics.add.overlap(this.player, this.powerUps, this.pickPowerUp, null, this);
@@ -178,17 +180,20 @@ class GamePlay extends Phaser.Scene {
   }
 
   moveEnemy(enemy, speed) {
-    enemy.y += speed;
-    //enemy.x += speed.x;
+    var rand = Phaser.Math.Between(0, 5);
+    enemy.y += speed + enemy.speed;
 
     if (enemy.y > configuration.height) {
       this.resetEnemyPosition(enemy);
+      this.setScore(-500);
     }
   }
 
   margin = 30;
   resetEnemyPosition(enemy) {
+    enemy.speed = Phaser.Math.Between(1, 10);
     enemy.y = 0;
+    enemy.y = Phaser.Math.Between(-20, 0);
     var randX = Phaser.Math.Between(
       this.margin,
       configuration.width - this.margin,
@@ -202,26 +207,73 @@ class GamePlay extends Phaser.Scene {
   }
 
   shootBullet(){
-    var bullet = new Bullet(this);
+    var bullet1 = new Bullet(this, 10);
+    var bullet2 = new Bullet(this, -10);
   }
 
   pickPowerUp(player, powerUp){
     powerUp.disableBody(true, true);
+    this.player.alpha = 0.8;
+    this.time.addEvent({
+      delay: 3000,
+      callback: this.resetAlpha,
+      callbackScope: this,
+      loop: false
+    });
+  }
+
+  resetAlpha(){
+    if(this.player.active){
+      this.player.alpha = 1;
+
+    }
   }
 
   hurtPlayer(player, enemy){
+    if(this.player.alpha < 1){
+      return;
+    }
+    var explosion = new Explosion(this, player.x, player.y);
+    explosion.setScale(6, 6);
     this.resetEnemyPosition(enemy);
-    player.x = configuration.width / 2 - 8;
-    player.y = configuration.height - 64;
-    this.score -= 500;
-    this.textScore.text = "Puntaje: " + this.score;
+    player.disableBody(true, true);
+    this.setScore(-1500)
+    this.time.addEvent({
+      delay: 1500,
+      callback: this.resetPlayer,
+      callbackScope: this,
+      loop: false
+    });
+  }
+
+  resetPlayer(){
+    var x = configuration.width / 2 - 8;
+    var y = configuration.height - 64;
+    this.player.enableBody(true, x, y, true, true);
+
+    this.player.alpha = 0.5;
+
+    var tween = this.tweens.add({
+      targets: this.player,
+      y:configuration.height - 64,
+      ease: 'Power1',
+      duration: 2000,
+      repeat: 0,
+      onComplete: function(){
+        this.player.alpha = 1;
+      },
+      callbackScope: this
+    });
+
   }
 
   hitEnemy(projectile, enemy){
+    var explosion = new Explosion(this, enemy.x, enemy.y);
+    explosion.setScale(4, 4);
     projectile.destroy();
     this.resetEnemyPosition(enemy);
-    this.score += 100;
-    this.textScore.text = "Puntaje: " + this.score;
+    this.setScore(100);
+
   }
 
   movePlayerManager() {
@@ -242,6 +294,11 @@ class GamePlay extends Phaser.Scene {
     }
   }
 
+  setScore(value){
+    this.score += value;
+    this.textScore.text = "Puntaje: " + this.score;
+  }
+
   update() {
     this.enemies.getChildren().forEach((enemy) => {
       this.moveEnemy(enemy, 2);
@@ -252,7 +309,9 @@ class GamePlay extends Phaser.Scene {
     this.movePlayerManager();
 
     if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
-      this.shootBullet();
+      if (this.player.active){
+        this.shootBullet();
+      }
       console.log("Fire");
     }
     for (let index = 0; index < this.projectiles.getChildren().length; index++) {
