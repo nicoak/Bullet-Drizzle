@@ -43,8 +43,10 @@ class GamePlay extends Phaser.Scene {
     graphics.fillPath();
 
     this.score = 0;
+    this.lifes = 5;
     this.textScore =  this.add.text(5, 0, "Puntaje: " + this.score, { font: "20px Arial", fill: "white" });
     this.textTitle =  this.add.text(365, 0, "BulletDrizzle", { font: "20px Arial", fill: "white" });
+    this.textlife = this.add.text(200, 0, "Vidas: " + this.lifes, { font: "18px Arial", fill: "white" });
 
     // Enemigos
     this.enemy1 = this.add.sprite(
@@ -93,7 +95,6 @@ class GamePlay extends Phaser.Scene {
     this.enemy4.play("enemy4_anim");
 
     this.enemies = this.physics.add.group();
-    // this.enemies = [this.enemy1, this.enemy2, this.enemy3, this.enemy4];
     this.enemies.add(this.enemy1);
     this.enemies.add(this.enemy2);
     this.enemies.add(this.enemy3);
@@ -104,13 +105,6 @@ class GamePlay extends Phaser.Scene {
     this.enemies.getChildren().forEach((enemy) => {
       enemy.setScale(0.4);
     });
-
-    // this.enemies.getChildren().forEach((enemy) => {
-    //   enemy.setInteractive();
-    // });
-
-    // this.input.on("gameobjectdown", this.destroyEnemy, this);
-
 
 
     // VFX
@@ -135,7 +129,7 @@ class GamePlay extends Phaser.Scene {
     }
 
     
-    // Player    
+    // Player 
     this.player = this.physics.add.sprite(
       configuration.width / 2 - 8,
       configuration.height - 64,
@@ -233,17 +227,26 @@ class GamePlay extends Phaser.Scene {
     if(this.player.alpha < 1){
       return;
     }
-    var explosion = new Explosion(this, player.x, player.y);
-    explosion.setScale(6, 6);
-    this.resetEnemyPosition(enemy);
-    player.disableBody(true, true);
-    this.setScore(-1500)
-    this.time.addEvent({
-      delay: 1500,
-      callback: this.resetPlayer,
-      callbackScope: this,
-      loop: false
-    });
+
+    this.lifes -= 1;
+    this.textlife.text = "Vidas: " + this.lifes;
+    if(this.lifes == 0){
+      this.scene.stop();
+      this.scene.start("gamePlay");
+    }
+    else{
+      var explosion = new Explosion(this, player.x, player.y);
+      explosion.setScale(6, 6);
+      this.resetEnemyPosition(enemy);
+      player.disableBody(true, true);
+      this.setScore(-1500)
+      this.time.addEvent({
+        delay: 1500,
+        callback: this.resetPlayer,
+        callbackScope: this,
+        loop: false
+      });
+    }
   }
 
   resetPlayer(){
