@@ -20,6 +20,7 @@ class GamePlay extends Phaser.Scene {
     objectName.setBounce(1);
   }
 
+
   create() {
     // Fondo
     this.background = this.add.tileSprite(
@@ -43,8 +44,11 @@ class GamePlay extends Phaser.Scene {
     graphics.fillPath();
 
     this.score = 0;
-    this.textScore =  this.add.text(5, 0, "Puntaje: " + this.score, { font: "20px Arial", fill: "white" });
+    this.lifes = 5;
+    this.textScore =  this.add.text(5, 0, "Puntaje: " + this.score, { font: "16px Arial", fill: "white" });
     this.textTitle =  this.add.text(365, 0, "BulletDrizzle", { font: "20px Arial", fill: "white" });
+    this.textlife = this.add.text(160, 0, "Vidas: " + this.lifes, { font: "16px Arial", fill: "white" });
+    this.textTime = this.add.text(250, 0, "Tiempo: " + this.elapsed, { font: "16px Arial", fill: "white" });
 
     // Enemigos
     this.enemy1 = this.add.sprite(
@@ -93,7 +97,6 @@ class GamePlay extends Phaser.Scene {
     this.enemy4.play("enemy4_anim");
 
     this.enemies = this.physics.add.group();
-    // this.enemies = [this.enemy1, this.enemy2, this.enemy3, this.enemy4];
     this.enemies.add(this.enemy1);
     this.enemies.add(this.enemy2);
     this.enemies.add(this.enemy3);
@@ -105,37 +108,32 @@ class GamePlay extends Phaser.Scene {
       enemy.setScale(0.4);
     });
 
-    // this.enemies.getChildren().forEach((enemy) => {
-    //   enemy.setInteractive();
-    // });
-
-    // this.input.on("gameobjectdown", this.destroyEnemy, this);
-
-
 
     // VFX
     this.createAnim("explode", "explosion", 20, 0, true);
     this.createAnim("power_up", "power_up", 20, -1, false);
 
-    // Powerups
-    this.powerUps = this.physics.add.group();
-    var maxPowerUps = 1;
-    for (let index = 0; index < maxPowerUps; index++) {
-      var powerUp = this.physics.add.sprite(16, 16, "power_up");
-      this.powerUps.add(powerUp);
-      powerUp.setRandomPosition(
-        0,
-        0,
-        configuration.width,
-        configuration.height,
-      );
-      powerUp.setScale(1.5);
-      powerUp.setCollideWorldBounds(true);
-      this.setRandomVelAndBounce(powerUp);
-    }
+    // // Powerups
+    // this.powerUps = this.physics.add.group();
+    // var maxPowerUps = 1;
+    // for (let index = 0; index < maxPowerUps; index++) {
+    //   var powerUp = this.physics.add.sprite(16, 16, "power_up");
+    //   this.powerUps.add(powerUp);
+    //   powerUp.setRandomPosition(
+    //     0,
+    //     0,
+    //     configuration.width,
+    //     configuration.height,
+    //   );
+    //   powerUp.setScale(1.5);
+    //   powerUp.setCollideWorldBounds(true);
+    //   this.setRandomVelAndBounce(powerUp);
+    // }
+
+    // this.powerUpSound = this.sound.add("powerup_sfx");
 
     
-    // Player    
+    // Player 
     this.player = this.physics.add.sprite(
       configuration.width / 2 - 8,
       configuration.height - 64,
@@ -148,10 +146,36 @@ class GamePlay extends Phaser.Scene {
 
     this.player.setScale(0.6);
     this.player.setCollideWorldBounds(true);
+    this.explosionSound = this.sound.add("explosion_sfx");
 
     // Proyectil
     this.createAnim("anim_bullet", "bullet", 20, -1, false);
     this.projectiles = this.add.group();
+    this.projectilSound = this.sound.add("shoot_sfx");
+
+    // Musica
+    this.gameMusic = this.sound.add("game_music");
+
+    var musicConfig = {
+      mute: false,
+      volume: 0.8,
+      rate: 1,
+      detune: 0,
+      seek: 0,
+      loop: true,
+      delay: 0
+    }
+    
+    this.gameMusic.play(musicConfig);
+
+    // Timer
+    this.time_timer = this.time.addEvent({
+      delay: 1000,
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: true,
+      paused: true
+    });
 
 
         
@@ -160,6 +184,10 @@ class GamePlay extends Phaser.Scene {
     
     this.spacebar = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE,
+    );
+
+    this.enterKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER,
     );
 
     // this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp){
@@ -214,6 +242,7 @@ class GamePlay extends Phaser.Scene {
   pickPowerUp(player, powerUp){
     powerUp.disableBody(true, true);
     this.player.alpha = 0.8;
+    this.powerUpSound.play();
     this.time.addEvent({
       delay: 3000,
       callback: this.resetAlpha,
@@ -233,17 +262,28 @@ class GamePlay extends Phaser.Scene {
     if(this.player.alpha < 1){
       return;
     }
-    var explosion = new Explosion(this, player.x, player.y);
-    explosion.setScale(6, 6);
-    this.resetEnemyPosition(enemy);
-    player.disableBody(true, true);
-    this.setScore(-1500)
-    this.time.addEvent({
-      delay: 1500,
-      callback: this.resetPlayer,
-      callbackScope: this,
-      loop: false
-    });
+
+    // EVENTO vidas
+    this.lifes -= 1;
+    this.textlife.text = "Vidas: " + this.lifes;
+    if(this.lifes == 0){
+      this.scene.stop();
+      this.scene.start("gamePlay");
+    }
+    else{
+      this.explosionSound.play();
+      var explosion = new Explosion(this, player.x, player.y);
+      explosion.setScale(6, 6);
+      this.resetEnemyPosition(enemy);
+      player.disableBody(true, true);
+      this.setScore(-1500)
+      this.time.addEvent({
+        delay: 1500,
+        callback: this.resetPlayer,
+        callbackScope: this,
+        loop: false
+      });
+    }
   }
 
   resetPlayer(){
@@ -273,7 +313,7 @@ class GamePlay extends Phaser.Scene {
     projectile.destroy();
     this.resetEnemyPosition(enemy);
     this.setScore(100);
-
+    this.explosionSound.play();
   }
 
   movePlayerManager() {
@@ -294,30 +334,55 @@ class GamePlay extends Phaser.Scene {
     }
   }
 
+
+  // EVENTOS
+  // EVENTO puntaje
   setScore(value){
     this.score += value;
     this.textScore.text = "Puntaje: " + this.score;
   }
 
+  elapsed = 0;
+  // EVENTO tiempo de juego
+  updateTimer(){
+    this.elapsed++;
+    this.textTime.text = "Tiempo: " + this.elapsed;
+  }
+
+  // Loop principal
+  can_loop = false;
+
   update() {
-    this.enemies.getChildren().forEach((enemy) => {
-      this.moveEnemy(enemy, 2);
-    });
-
-    this.scrollBackground();
-
-    this.movePlayerManager();
-
-    if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
-      if (this.player.active){
-        this.shootBullet();
-      }
-      console.log("Fire");
+    console.log(this.elapsed);
+    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+      this.can_loop = !this.can_loop;
+      this.time_timer.paused = !this.time_timer.paused;
     }
-    for (let index = 0; index < this.projectiles.getChildren().length; index++) {
-      var bullet = this.projectiles.getChildren()[index];
-      bullet.update();
+ 
+    if (this.can_loop){
+      this.time_timer.paused = false;
+      this.enemies.getChildren().forEach((enemy) => {
+        this.moveEnemy(enemy, 2);
+      });
+
+      this.scrollBackground();
+      this.movePlayerManager();
+
       
+      if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+        if (this.player.active){
+          this.shootBullet();
+          this.projectilSound.play();
+          // EVENTO disparar
+          console.log("Fire");
+        }
+      }
+      for (let index = 0; index < this.projectiles.getChildren().length; index++) {
+        var bullet = this.projectiles.getChildren()[index];
+        bullet.update();
+        
+      }
+
     }
 
   }
