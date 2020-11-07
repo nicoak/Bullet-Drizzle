@@ -84,6 +84,13 @@ class Menu extends Phaser.Scene {
     // VFX
     this.loadSpritesheet("explosion", "explosion.png", 16, 16);
     this.loadSpritesheet("power_up", "power-up.png", 16, 16);
+
+    //SFX y Musica
+    this.load.audio("shoot_sfx", ["assets/snd/08shoot.ogg", "assets/snd/08shoot.mp3"]);
+    this.load.audio("explosion_sfx", ["assets/snd/04enemyexplosion.ogg", "assets/snd/04enemyexplosion.mp3"]);
+    this.load.audio("powerup_sfx", ["assets/snd/bulletchange01.ogg", "assets/snd/bulletchange01.mp3"]);
+    this.load.audio("game_music", "assets/snd/game_music.ogg");
+
   }
 
 
