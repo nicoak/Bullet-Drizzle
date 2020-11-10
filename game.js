@@ -339,7 +339,7 @@ class GamePlay extends Phaser.Scene {
   // EVENTOS
   myWorker = new Worker("sw.js");
   sendMsg(value, eventName){
-    this.myWorker.postMessage({"game": 'Bullet Drizzle', "event:": eventName, "data": value});
+    this.myWorker.postMessage({"game": 'Nico', "event:": eventName, "data": value});
   }
 
   // EVENTO puntaje
