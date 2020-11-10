@@ -32,7 +32,7 @@ class GamePlay extends Phaser.Scene {
     );
     this.background.setOrigin(0, 0);
 
-    var myWorker = new Worker("worker.js");
+
 
     var graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
@@ -338,19 +338,17 @@ class GamePlay extends Phaser.Scene {
 
 
   // EVENTOS
-
-  sendMsg(value){
-    first.onchange = function() {
-      myWorker.postMessage(value);
-      console.log('Message posted to worker');
-    }
+  myWorker = new Worker("sw.js");
+  sendMsg(value, eventName){
+    this.myWorker.postMessage({"game": 'Bullet Drizzle', "event:": eventName, "data": value});
+    console.log('Message posted to worker');
   }
 
   // EVENTO puntaje
   setScore(value){
     this.score += value;
     this.textScore.text = "Puntaje: " + this.score;
-    this.sendMsg(this.score)
+    this.sendMsg(this.score, "setScore")
   }
 
   elapsed = 0;
