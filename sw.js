@@ -1,4 +1,4 @@
-self.onmessage = function (event,data) {
+self.onmessage = function (myData) {
     console.log(obj)
     fetch("https://gamedashboarducp.azurewebsites.net/api/game",{
         method: 'post',
@@ -6,7 +6,7 @@ self.onmessage = function (event,data) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(obj)
+        body: JSON.stringify({game: "Bullet-Drizzle", event: myData.data[0], data: myData.data[1] })
     
     
 });
