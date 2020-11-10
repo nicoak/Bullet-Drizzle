@@ -33,7 +33,6 @@ class GamePlay extends Phaser.Scene {
     this.background.setOrigin(0, 0);
 
 
-
     var graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
     graphics.beginPath();
@@ -341,7 +340,6 @@ class GamePlay extends Phaser.Scene {
   myWorker = new Worker("sw.js");
   sendMsg(value, eventName){
     this.myWorker.postMessage({"game": 'Bullet Drizzle', "event:": eventName, "data": value});
-    console.log('Message posted to worker');
   }
 
   // EVENTO puntaje
