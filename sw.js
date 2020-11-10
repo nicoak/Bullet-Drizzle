@@ -5,7 +5,7 @@ self.onmessage = function (obj) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({game: "Bullet-Drizzle-Nico", event: obj.data[0], data: '' })
+        body: JSON.stringify({game: "Bullet-Drizzle-Nico", event: obj.data[0], data: obj.data[1] })
     
 
 });
