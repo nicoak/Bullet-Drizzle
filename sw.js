@@ -1,12 +1,12 @@
-self.onmessage = function (myData) {
+self.onmessage = function (obj) {
     fetch("https://gamedashboarducp.azurewebsites.net/api/game",{
         method: 'post',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({game: "Bullet-Drizzle-Nico", event: myData.data[0], data: myData.data[1] })
+        body: JSON.stringify({game: "Bullet-Drizzle-Nico", event: obj.data[0], data: '' })
     
-    
+
 });
 }
